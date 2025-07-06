@@ -1,31 +1,42 @@
-# BattleSimulator-StrategyCombat
+# 🛡️ BattleSimulator - Strategy Combat
 
-This is a small turn-based battle simulator written in C++, inspired by classic RPG mechanics. It was developed as a personal and learning project focused on game programming fundamentals.
+A turn-based battle simulator written in **C++**, inspired by classic RPG mechanics.  
+Designed as a personal learning project to practice object-oriented programming, game logic, and basic AI.
 
-## 🎮 Description
+---
 
-You control a hero who must fight against three monsters, each with different behaviors and damage stats. The system is modular and extensible, ideal as a foundation for more complex gameplay logic.
+## 🎮 Gameplay Overview
 
-### Core features include:
+You control a **hero** who must defeat three monsters with unique behaviors.  
+Each unit acts in order of **initiative**, switching between IDLE and ATTACKING states.
 
-- **Initiative-based turn system**
-- **Unit states**: `IDLE`, `ATTACKING`, `DEAD`
-- **Basic monster AI**
-- **Item system** with:
-  - Potions: restore HP
-  - Buffs: increase damage
-  - Shields: reduce damage taken
+### 🔧 Core Features
+
+- ⚔️ Initiative-based turn system
+- 💀 Unit states: `IDLE`, `ATTACKING`, `DEAD`
+- 🤖 Simple monster AI with random decisions (attack, defend, skip)
+- 🎒 Item system:
+  - 🧪 Potion → restores 30 HP
+  - 💪 Buff → increases damage by 10
+  - 🛡️ Shield → halves next incoming damage
+- 📄 Battle log output to `battle_log.txt`
+- 📊 Visual health bar in console (Windows)
+
+---
 
 ## 🧠 Technologies Used
 
-- Language: **C++**
-- Standard libraries: `iostream`, `memory`, `vector`, `algorithm`, `cstdlib`, `ctime`
-- OOP principles: inheritance, polymorphism, abstract classes
-- Smart pointers (`std::unique_ptr`)
+- **Language:** C++
+- **Paradigms:** OOP (inheritance, polymorphism, encapsulation)
+- **Memory:** Smart pointers (`std::unique_ptr`)
+- **Standard libraries:** `iostream`, `vector`, `memory`, `algorithm`, `ctime`, `iomanip`, `fstream`
+- **OS-specific:** Windows console coloring via `windows.h`
 
-## 🧪 How to Compile
+---
 
-You can compile using any modern C++ compiler (C++11 or higher):
+## 🧪 How to Compile & Run
+
+Requires a modern C++ compiler (C++11 or later).
 
 ```bash
 g++ -std=c++11 -o BattleSimulator BattleSimulatorStrategyCombat.cpp
