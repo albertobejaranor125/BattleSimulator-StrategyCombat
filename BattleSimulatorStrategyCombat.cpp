@@ -1,22 +1,49 @@
 #include <iostream>
+#include <iomanip>
+#include <fstream>
 #include <string>
 #include <vector>
 #include <memory>
 #include <algorithm>
 #include <cstdlib>
 #include <ctime>
-
+#ifdef _WIN32
+#define NOMINMAX
+#include <windows.h>
+#endif
 // Enum para estados de unidad
 enum class UnitState {
     IDLE,
     ATTACKING,
     DEAD
 };
-
+enum class MonsterAction {
+    ATTACK,
+    DEFEND,
+    SKIP
+};
+void SetConsoleColor(int color) {
+#ifdef _WIN32
+    HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    SetConsoleTextAttribute(hConsole, static_cast<WORD>(color));
+#endif
+}
 // Declaración adelantada
 class Unit;
 
-
+class BattleLogger {
+public:
+    static void Log(const std::string& message) {
+        std::cout << "[LOG] " << message << std::endl;
+        std::ofstream outFile("battle_log.txt", std::ios::app);
+        if (outFile) {
+            outFile << message << std::endl;
+        }
+    }
+    static void ResetLog() {
+        std::ofstream outFile("battle_log.txt", std::ios::trunc); // Limpia el archivo
+    }
+};
 // Clase base de las unidades
 class Unit {
 protected:
@@ -35,7 +62,7 @@ public:
     void ActivateShield() { shielded = true; }
     void MoreDamage(int amount) { damage = std::min(damage + amount, 100); }
     void Heal(int amount) { health = std::min(health + amount, 100); }
-    int GetHealth() { return health; }
+    int GetHealth() const { return health; }
     virtual void Attack(std::vector<std::unique_ptr<Unit>>& units) = 0;
 
     virtual void TakeDamage(int amount) {
@@ -58,12 +85,27 @@ public:
     }
 
     virtual void PrintStatus() const {
-        system("Color 0A");
-        std::cout << name << " - HP: " << health << ", Damage: " << damage;
+#ifdef _WIN32
+        if (!IsAlive()) SetConsoleColor(7);               // Gris claro (muerto)
+        else if (name == "Arthur") SetConsoleColor(10);   // Verde brillante para héroe
+        else SetConsoleColor(12);                         // Rojo brillante para monstruos
+#endif
+        const int maxBarWidth = 20;
+        int filledBars = std::max(0, std::min(health / 5, maxBarWidth));
+        std::string hpBar(filledBars, '#');
+        hpBar.resize(maxBarWidth, '.');  // el resto lo rellena con puntos
+
+        std::cout << std::left << std::setw(12) << name
+            << "| HP: " << std::setw(3) << health
+            << "| [" << hpBar << "]"
+            << " | DMG: " << std::setw(3) << damage;
         if (state == UnitState::IDLE) std::cout << " (Idle)";
         else if (state == UnitState::ATTACKING) std::cout << " (Attacking)";
         else if (state == UnitState::DEAD) std::cout << " (Dead)";
-        std::cout << "\n";
+        std::cout << std::endl;
+#ifdef _WIN32
+        SetConsoleColor(7); // Restaurar color por defecto
+#endif
     }
    
     virtual ~Unit() = default;
@@ -80,7 +122,7 @@ class Potion : public Item {
     }
     void Use(Unit& user) {
         user.Heal(30);
-        std::cout << user.GetName() << " uses a potion and heals 30 HP!\n";
+        BattleLogger::Log(user.GetName() + " uses a potion and heals 30 HP!");
     }
 };
 class Buff : public Item {
@@ -89,7 +131,7 @@ class Buff : public Item {
     }
     void Use(Unit& user) {
         user.MoreDamage(10);
-        std::cout << user.GetName() << " uses a buff and increase 10 Damage!\n";
+        BattleLogger::Log(user.GetName() + " uses a buff and increase 10 Damage!");
     }
 };
 class Shield : public Item {
@@ -98,7 +140,7 @@ class Shield : public Item {
     }
     void Use(Unit& user) {
         user.ActivateShield();
-        std::cout << user.GetName() << " raises a shield and will take half damage!\n";
+        BattleLogger::Log(user.GetName() + " raises a shield and will take half damage!");
     }
 };
 Unit* FindStrongestTarget(const Unit& self, const std::vector<std::unique_ptr<Unit>>& units) {
@@ -148,7 +190,7 @@ public:
         Unit* target = FindStrongestTarget(*this, units);
         if (!target) return;
         int dmg = (health > 50) ? 25 : 15;
-        std::cout << name << " is attacking to " << target->GetName() << std::endl;
+        BattleLogger::Log(name + " is attacking to " + target->GetName());
         target->TakeDamage(dmg);
     }
 };
@@ -157,28 +199,40 @@ public:
     Monster(const std::string& name)
         : Unit(name, 80, 20, 5, UnitState::IDLE) {
     }
-
+    MonsterAction DecideAction() const {
+        if (health < 30) {
+            int decision = rand() % 3;
+            if (decision == 0) {
+                return MonsterAction::DEFEND;
+            }
+            else if (decision == 1) {
+                return MonsterAction::SKIP;
+            }
+            else {
+                return MonsterAction::ATTACK;
+            }
+        }
+        return MonsterAction::ATTACK;
+    }
     void Attack(std::vector<std::unique_ptr<Unit>>& units) override {
+        MonsterAction action = DecideAction();
         Unit* target = FindStrongestTarget(*this, units);
         if (!target) return;
         int dmg = 20;
         if (name == "Goblin") dmg = 12;
         else if (name == "Troll") dmg = 15;
-        if (health < 30) {
-            int decision = rand() % 2;
-            if (decision == 0) {
-                std::cout << name << " is attacking to " << target->GetName() << std::endl;
+        switch (action) {
+            case MonsterAction::ATTACK:
+                BattleLogger::Log(name + " attacks to " + target->GetName() + " with " + std::to_string(dmg) + " damage");
                 target->TakeDamage(dmg);
-                return;
-            }
-            else if (decision == 1) {
-                std::cout << name << " is trying to heal but he can't attack!\n";
-                return;
-            }
-        }
-        else {
-            std::cout << name << " is attacking to " << target->GetName() << std::endl;
-            target->TakeDamage(dmg);
+                break;
+            case MonsterAction::DEFEND:
+                ActivateShield();
+                BattleLogger::Log(name + " defends and protect his health");
+                break;
+            case MonsterAction::SKIP:
+                BattleLogger::Log(name + " skips the turn");
+                break;
         }
     }
 };
@@ -242,6 +296,7 @@ Game::Game() {
 }
 // main()
 int main() {
+    BattleLogger::ResetLog();
     Game game;
     game.Run();
     return 0;

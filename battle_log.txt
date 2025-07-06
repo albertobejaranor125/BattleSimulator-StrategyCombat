@@ -1,0 +1,30 @@
+Arthur uses a buff and increase 10 Damage!
+Arthur is attacking to Goblin
+Goblin attacks to Arthur with 12 damage
+Orc attacks to Arthur with 20 damage
+Troll attacks to Orc with 15 damage
+Arthur is attacking to Troll
+Goblin attacks to Arthur with 12 damage
+Orc attacks to Arthur with 20 damage
+Troll attacks to Orc with 15 damage
+Arthur uses a potion and heals 30 HP!
+Arthur is attacking to Goblin
+Goblin attacks to Arthur with 12 damage
+Orc attacks to Troll with 20 damage
+Troll attacks to Arthur with 15 damage
+Arthur is attacking to Orc
+Goblin attacks to Arthur with 12 damage
+Orc attacks to Troll with 20 damage
+Troll skips the turn
+Arthur is attacking to Orc
+Goblin attacks to Arthur with 12 damage
+Orc skips the turn
+Troll attacks to Goblin with 15 damage
+Arthur is attacking to Orc
+Goblin defends and protect his health
+Orc defends and protect his health
+Troll defends and protect his health
+Arthur is attacking to Goblin
+Goblin defends and protect his health
+Orc attacks to Arthur with 20 damage
+Troll defends and protect his health
